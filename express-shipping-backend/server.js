@@ -27,10 +27,10 @@ app.use("/api/auth", authRoutes);
 //  announcements routes
 app.use("/api/announcements", announcementRoutes);
 
-// Protected route accessible only by driver
-app.get("/", protect, authorizeRoles("driver"), (req, res) => {
+// role test route
+app.get("/", protect, authorizeRoles("shipper"), (req, res) => {
   res.json({
-    message: `Hello ${req.user.firstName}, only drivers can see this.`,
+    message: `Hello ${req.user.firstName}, only shippers can see this.`,
   });
 });
 
