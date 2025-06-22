@@ -53,7 +53,29 @@ const getAllAnnouncements = async (req, res) => {
   }
 };
 
+// GET one announcement by ID
+const getAnnouncementById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const announcement = await Announcement.findById(id).populate(
+      "driver",
+      "firstName lastName phone email"
+    );
+
+    if (!announcement) {
+      return res.status(404).json({ message: "Announcement not found" });
+    }
+
+    res.json(announcement);
+  } catch (err) {
+    console.error("Get announcement by ID error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createAnnouncement,
   getAllAnnouncements,
+  getAnnouncementById,
 };
