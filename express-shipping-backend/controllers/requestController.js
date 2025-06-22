@@ -79,8 +79,23 @@ const respondToRequest = async (req, res) => {
   }
 };
 
+// Shipper sees all their own requests
+const getMyRequests = async (req, res) => {
+  try {
+    const requests = await Request.find({ shipper: req.user._id })
+      .populate("announcement")
+      .sort({ createdAt: -1 });
+
+    res.json(requests);
+  } catch (err) {
+    console.error("Get my requests error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createRequest,
   getDriverRequests,
   respondToRequest,
+  getMyRequests,
 };

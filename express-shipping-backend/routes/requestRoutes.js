@@ -3,6 +3,7 @@ const {
   createRequest,
   getDriverRequests,
   respondToRequest,
+  getMyRequests,
 } = require("../controllers/requestController");
 const { protect, authorizeRoles } = require("../middlewares/authMiddleware");
 
@@ -21,5 +22,13 @@ router.get(
 
 // driver accepts or rejects a request
 router.put("/:id/respond", protect, authorizeRoles("driver"), respondToRequest);
+
+// shipper gets all their requests
+router.get(
+  "/my-requests/shipper",
+  protect,
+  authorizeRoles("shipper"),
+  getMyRequests
+);
 
 module.exports = router;
