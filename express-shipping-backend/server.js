@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const { protect, authorizeRoles } = require("./middlewares/authMiddleware");
+const authRoutes = require("./routes/authRoutes");
+const announcementRoutes = require("./routes/announcementRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -19,9 +21,11 @@ app.use(cors());
 // Middleware to parse incoming JSON requests
 app.use(express.json());
 
-// add the auth  route
-const authRoutes = require("./routes/authRoutes");
+// auth route
 app.use("/api/auth", authRoutes);
+
+//  announcements routes
+app.use("/api/announcements", announcementRoutes);
 
 // Protected route accessible only by driver
 app.get("/", protect, authorizeRoles("driver"), (req, res) => {
