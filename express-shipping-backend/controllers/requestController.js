@@ -1,4 +1,5 @@
 const Request = require("../models/Request");
+const Announcement = require("../models/Announcement");
 
 // Create a shipping request
 const createRequest = async (req, res) => {
@@ -25,4 +26,61 @@ const createRequest = async (req, res) => {
   }
 };
 
-module.exports = { createRequest };
+// Get all requests for the driver's announcement
+const getDriverRequests = async (req, res) => {
+  try {
+    const announcement = await Announcement.findOne({
+      driver: req.user._id,
+      isActive: true,
+    });
+
+    if (!announcement) {
+      return res.status(404).json({ message: "No active announcement found" });
+    }
+
+    const requests = await Request.find({
+      announcement: announcement._id,
+    }).populate("shipper", "firstName lastName email");
+
+    res.json(requests);
+  } catch (err) {
+    console.error("Get driver requests error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Accept or reject a request
+const respondToRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body; // should be 'accept' or 'reject'
+
+    const request = await Request.findById(id).populate("announcement");
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    if (String(request.announcement.driver) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (!["accept", "reject"].includes(action)) {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    request.status = action === "accept" ? "accepted" : "rejected";
+    await request.save();
+
+    res.json({ message: `Request has been ${request.status}.`, request });
+  } catch (err) {
+    console.error("Respond to request error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  createRequest,
+  getDriverRequests,
+  respondToRequest,
+};
