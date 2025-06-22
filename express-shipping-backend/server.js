@@ -35,6 +35,10 @@ app.use("/api/requests", requestRoutes);
 const loadRoutes = require("./routes/loadRoutes");
 app.use("/api/loads", loadRoutes);
 
+// review routes
+const reviewRoutes = require("./routes/reviewRoutes");
+app.use("/api/reviews", reviewRoutes);
+
 // role test route
 app.get("/", protect, authorizeRoles("shipper"), (req, res) => {
   res.json({
