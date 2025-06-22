@@ -5,19 +5,14 @@ const User = require("../models/User");
 const protect = async (req, res, next) => {
   let token;
 
-  // Check for token in Authorization header
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      // Extract token from header
       token = req.headers.authorization.split(" ")[1];
 
-      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Fetch user by decoded ID, exclude password
       req.user = await User.findById(decoded.id).select("-password");
 
       next();
@@ -32,4 +27,19 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// NEW: Middleware to restrict access based on user role
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Access denied: insufficient permissions" });
+    }
+    next();
+  };
+};
+
+module.exports = {
+  protect,
+  authorizeRoles,
+};

@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const { protect } = require("./middlewares/authMiddleware");
+const { protect, authorizeRoles } = require("./middlewares/authMiddleware");
 
 // Load environment variables
 dotenv.config();
@@ -23,10 +23,10 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
-// Protected test route
-app.get("/", protect, (req, res) => {
+// Protected route accessible only by driver
+app.get("/", protect, authorizeRoles("driver"), (req, res) => {
   res.json({
-    message: `Welcome ${req.user.firstName}, you are logged in as ${req.user.role}`,
+    message: `Hello ${req.user.firstName}, only drivers can see this.`,
   });
 });
 
