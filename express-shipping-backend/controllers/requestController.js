@@ -116,7 +116,50 @@ const getMyRequests = async (req, res) => {
   }
 };
 
+// Admin: Get all shipping requests
+const getAllRequestsAdmin = async (req, res) => {
+  try {
+    const requests = await Request.find()
+      .populate("shipper", "firstName lastName email")
+      .populate("announcement");
+    res.json(requests);
+  } catch (err) {
+    console.error("Get all requests error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const deleteRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const request = await Request.findById(id);
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    // Admin can delete any, Shipper only their own
+    if (
+      user.role !== "admin" &&
+      request.shipper.toString() !== user._id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this request" });
+    }
+
+    await Request.findByIdAndDelete(id);
+    res.json({ message: "Request deleted successfully" });
+  } catch (err) {
+    console.error("Delete request error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
+  getAllRequestsAdmin,
+  deleteRequest,
   createRequest,
   getDriverRequests,
   respondToRequest,

@@ -27,7 +27,7 @@ const createAnnouncement = async (req, res) => {
   }
 };
 
-//Get all available announcements with filters
+// Get all available announcements with filters For shipper use
 const getAllAnnouncements = async (req, res) => {
   try {
     const { destination, vehicleType, goodsType, minPrice, maxPrice } =
@@ -74,8 +74,53 @@ const getAnnouncementById = async (req, res) => {
   }
 };
 
+// For admin: Get all announcements
+const getAllAnnouncementsAdmin = async (req, res) => {
+  try {
+    const announcements = await Announcement.find().populate(
+      "driver",
+      "-password"
+    );
+    res.json(announcements);
+  } catch (err) {
+    console.error("Get all announcements error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Delete an announcement
+const deleteAnnouncement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const announcement = await Announcement.findById(id);
+    if (!announcement) {
+      return res.status(404).json({ message: "Announcement not found" });
+    }
+
+    // If user is not admin, check ownership
+    if (
+      user.role !== "admin" &&
+      announcement.driver.toString() !== user._id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this announcement" });
+    }
+
+    await Announcement.findByIdAndDelete(id);
+    res.json({ message: "Announcement deleted successfully" });
+  } catch (err) {
+    console.error("Delete announcement error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createAnnouncement,
   getAllAnnouncements,
   getAnnouncementById,
+  getAllAnnouncementsAdmin,
+  deleteAnnouncement,
 };

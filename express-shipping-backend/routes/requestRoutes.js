@@ -1,5 +1,7 @@
 const express = require("express");
 const {
+  getAllRequestsAdmin,
+  deleteRequest,
   createRequest,
   getDriverRequests,
   respondToRequest,
@@ -30,5 +32,11 @@ router.get(
   authorizeRoles("shipper"),
   getMyRequests
 );
+
+// Admin routes
+router.get("/admin", protect, authorizeRoles("admin"), getAllRequestsAdmin);
+
+// one universal route
+router.delete("/:id", protect, deleteRequest);
 
 module.exports = router;
