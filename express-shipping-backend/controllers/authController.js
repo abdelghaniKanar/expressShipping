@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // POST /api/auth/register
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   const { firstName, lastName, email, phone, password, role } = req.body;
 
   try {
@@ -44,4 +44,50 @@ exports.register = async (req, res) => {
     console.error("Registration error:", err.message);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// POST /api/auth/login
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Create JWT token
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        role: user.role,
+        email: user.email,
+        fullName: `${user.firstName} ${user.lastName}`,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  register,
+  login,
 };
