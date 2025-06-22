@@ -23,13 +23,17 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
-//  announcements routes
+// announcement routes
 const announcementRoutes = require("./routes/announcementRoutes");
 app.use("/api/announcements", announcementRoutes);
 
 // request routes
 const requestRoutes = require("./routes/requestRoutes");
 app.use("/api/requests", requestRoutes);
+
+// load routes
+const loadRoutes = require("./routes/loadRoutes");
+app.use("/api/loads", loadRoutes);
 
 // role test route
 app.get("/", protect, authorizeRoles("shipper"), (req, res) => {

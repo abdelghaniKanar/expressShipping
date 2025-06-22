@@ -1,5 +1,6 @@
 const Request = require("../models/Request");
 const Announcement = require("../models/Announcement");
+const Load = require("../models/Load");
 
 // Create a shipping request
 const createRequest = async (req, res) => {
@@ -53,7 +54,7 @@ const getDriverRequests = async (req, res) => {
 const respondToRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { action } = req.body; // should be 'accept' or 'reject'
+    const { action } = req.body;
 
     const request = await Request.findById(id).populate("announcement");
 
@@ -71,6 +72,28 @@ const respondToRequest = async (req, res) => {
 
     request.status = action === "accept" ? "accepted" : "rejected";
     await request.save();
+
+    // If accepted -- create Load
+    if (action === "accept") {
+      const existingLoad = await Load.findOne({
+        driver: req.user._id,
+        status: "active",
+      });
+      if (existingLoad) {
+        return res
+          .status(400)
+          .json({ message: "Driver already has an active load" });
+      }
+
+      const newLoad = new Load({
+        driver: req.user._id,
+        shipper: request.shipper,
+        announcement: request.announcement._id,
+        request: request._id,
+      });
+
+      await newLoad.save();
+    }
 
     res.json({ message: `Request has been ${request.status}.`, request });
   } catch (err) {
