@@ -1,11 +1,13 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
+import React from "react";
+import AppRoutes from "./routes";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-    </Routes>
+    <>
+      <AppRoutes />
+      <Toaster position="top-right" />
+    </>
   );
 };
 
