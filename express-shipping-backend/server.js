@@ -57,6 +57,9 @@ app.get("/", protect, authorizeRoles("shipper"), (req, res) => {
 // email test
 app.use("/api/test", require("./routes/testRoutes"));
 
+// stats
+app.use("/api/stats", require("./routes/statsRoutes"));
+
 // Start the server on the specified port
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
