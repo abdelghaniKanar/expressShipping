@@ -88,7 +88,7 @@ const getAllAnnouncementsAdmin = async (req, res) => {
   }
 };
 
-// Admin: Delete an announcement
+// Delete an announcement
 const deleteAnnouncement = async (req, res) => {
   try {
     const { id } = req.params;

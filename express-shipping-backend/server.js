@@ -40,6 +40,10 @@ const reviewRoutes = require("./routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
 
 // user routes
+// user
+const userSelfRoutes = require("./routes/userSelfRoutes");
+app.use("/api/users", userSelfRoutes);
+// admin
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
 
