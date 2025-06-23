@@ -1,6 +1,7 @@
 const Request = require("../models/Request");
 const Announcement = require("../models/Announcement");
 const Load = require("../models/Load");
+const transporter = require("../config/mailer");
 
 // Create a shipping request
 const createRequest = async (req, res) => {
@@ -56,7 +57,9 @@ const respondToRequest = async (req, res) => {
     const { id } = req.params;
     const { action } = req.body;
 
-    const request = await Request.findById(id).populate("announcement");
+    const request = await Request.findById(id)
+      .populate("announcement")
+      .populate("shipper"); // Populate shipper to get email
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
@@ -87,13 +90,21 @@ const respondToRequest = async (req, res) => {
 
       const newLoad = new Load({
         driver: req.user._id,
-        shipper: request.shipper,
+        shipper: request.shipper._id,
         announcement: request.announcement._id,
         request: request._id,
       });
 
       await newLoad.save();
     }
+
+    // Send email notification to shipper
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: request.shipper.email,
+      subject: `Your Shipping Request has been ${request.status}`,
+      text: `Hello ${request.shipper.firstName},\n\nYour request for the announcement "${request.announcement._id}" has been ${request.status} by the driver.`,
+    });
 
     res.json({ message: `Request has been ${request.status}.`, request });
   } catch (err) {

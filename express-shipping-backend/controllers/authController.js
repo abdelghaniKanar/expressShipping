@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const transporter = require("../config/mailer");
 
 // POST /api/auth/register
 const register = async (req, res) => {
@@ -35,6 +36,13 @@ const register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: "admin@example.com",
+      subject: "New User Registration",
+      text: `A new user has registered: ${firstName} ${lastName}, Email: ${email}`,
+    });
 
     res.status(201).json({
       message: "User registered successfully",
