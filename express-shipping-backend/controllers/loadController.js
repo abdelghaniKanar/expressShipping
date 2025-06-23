@@ -50,7 +50,35 @@ const deliverLoad = async (req, res) => {
   }
 };
 
+// Admin: Get all active (non-delivered) loads
+const getActiveLoadsForAdmin = async (req, res) => {
+  try {
+    const loads = await Load.find({ status: "active" })
+      .populate("driver", "firstName lastName email")
+      .populate("shipper", "firstName lastName email");
+    res.json(loads);
+  } catch (err) {
+    console.error("Admin load view error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Get all delivered loads (history)
+const getDeliveredLoadsForAdmin = async (req, res) => {
+  try {
+    const loads = await Load.find({ status: "delivered" })
+      .populate("driver", "firstName lastName email")
+      .populate("shipper", "firstName lastName email");
+    res.json(loads);
+  } catch (err) {
+    console.error("Admin delivered load view error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
+  getActiveLoadsForAdmin,
+  getDeliveredLoadsForAdmin,
   getMyLoads,
   deliverLoad,
 };
